@@ -61,7 +61,7 @@ def _load_stuff_chain(
         llm=llm, prompt=prompt, verbose=verbose, callback_manager=callback_manager
     )
     # TODO: document prompt
-    print("XXXX creating StuffDocumentsChain with Quinn's implementation")
+    print("Creating StuffDocumentsChain with Quinn's implementation")
     return StuffDocumentsChain(
         llm_chain=llm_chain,
         document_variable_name=document_variable_name,
@@ -124,7 +124,7 @@ def _load_map_reduce_chain(
             verbose=verbose,
             callback_manager=callback_manager,
         )
-    print("XXXX creating MapReduceDocumentsChain with Quinn's implementation")
+    print("Creating MapReduceDocumentsChain with Quinn's implementation")
     return MapReduceDocumentsChain(
         llm_chain=map_chain,
         combine_document_chain=combine_document_chain,
@@ -161,7 +161,7 @@ def _load_refine_chain(
         verbose=verbose,
         callback_manager=callback_manager,
     )
-    print("XXXX creating RefineDocumentsChain with Quinn's implementation")
+    print("Creating RefineDocumentsChain with Quinn's implementation")
     return RefineDocumentsChain(
         initial_llm_chain=initial_chain,
         refine_llm_chain=refine_chain,

@@ -10,6 +10,12 @@ from langchain.prompts.base import BasePromptTemplate
 from langchain.prompts.prompt import PromptTemplate
 from langchain.schema import LLMResult
 
+from langchain.text_splitter import TokenTextSplitter
+import tiktoken
+
+enc = tiktoken.get_encoding("gpt2")
+MAX_ALLOWED_TOKEN = 3800
+text_splitter = TokenTextSplitter(chunk_size=3000, chunk_overlap=0)
 
 class LLMChain(Chain, BaseModel):
     """Chain to run queries against LLMs.

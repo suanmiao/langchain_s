@@ -10,6 +10,13 @@ from langchain.docstore.document import Document
 from langchain.prompts.base import BasePromptTemplate
 from langchain.prompts.prompt import PromptTemplate
 
+from langchain.text_splitter import TokenTextSplitter
+import tiktoken
+
+enc = tiktoken.get_encoding("gpt2")
+MAX_ALLOWED_TOKEN = 3800
+text_splitter = TokenTextSplitter(chunk_size=3000, chunk_overlap=0)
+
 
 def _get_default_document_prompt() -> PromptTemplate:
     return PromptTemplate(input_variables=["page_content"], template="{page_content}")
@@ -73,7 +80,15 @@ class StuffDocumentsChain(BaseCombineDocumentsChain, BaseModel):
             for k, v in kwargs.items()
             if k in self.llm_chain.prompt.input_variables
         }
-        inputs[self.document_variable_name] = "\n\n".join(doc_strings)
+
+        ## Here we need to do trimming
+        original_input = "\n\n".join(doc_strings)
+        num_tokens = len(enc.encode(original_input)) 
+        if num_tokens > MAX_ALLOWED_TOKEN:
+            print(f"Fatal error, the input has num_tokens {num_tokens}, which exceeds the limit {MAX_ALLOWED_TOKEN}, trimming off the size.")
+            original_input = text_splitter.split_text(original_input)[0]
+ 
+        inputs[self.document_variable_name] = original_input 
         return inputs
 
     def prompt_length(self, docs: List[Document], **kwargs: Any) -> Optional[int]:

@@ -13,6 +13,9 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.llms.base import BaseLLM
 from langchain.prompts.base import BasePromptTemplate
 from langchain.vectorstores.base import VectorStore
+import tiktoken
+enc = tiktoken.get_encoding("gpt2")
+MAX_ALLOWED_TOKEN = 3500
 
 
 def _get_chat_history(chat_history: List[Tuple[str, str]]) -> str:
@@ -28,7 +31,7 @@ class ChatVectorDBChain(Chain, BaseModel):
     """Chain for chatting with a vector database."""
 
     vectorstore: VectorStore
-    combine_docs_chain: BaseCombineDocumentsChain
+    combine_docs_chains: list[BaseCombineDocumentsChain]
     question_generator: LLMChain
     output_key: str = "answer"
     return_source_documents: bool = False
@@ -62,22 +65,40 @@ class ChatVectorDBChain(Chain, BaseModel):
         vectorstore: VectorStore,
         condense_question_prompt: BasePromptTemplate = CONDENSE_QUESTION_PROMPT,
         qa_prompt: BasePromptTemplate = QA_PROMPT,
-        chain_type: str = "stuff",
         **kwargs: Any,
     ) -> ChatVectorDBChain:
+        ## This is the default chain type
         """Load chain from LLM."""
-        doc_chain = load_qa_chain(
+        stuff_chain = load_qa_chain(
             llm,
-            chain_type=chain_type,
+            chain_type="stuff",
             prompt=qa_prompt,
         )
+        map_reduce_chain = load_qa_chain(
+            llm,
+            chain_type="map_reduce",
+            prompt=qa_prompt,
+        )
+        refine_chain = load_qa_chain(
+            llm,
+            chain_type="refine",
+            prompt=qa_prompt,
+        )
+
         condense_question_chain = LLMChain(llm=llm, prompt=condense_question_prompt)
         return cls(
             vectorstore=vectorstore,
-            combine_docs_chain=doc_chain,
+            combine_docs_chains=[stuff_chain, map_reduce_chain, refine_chain],
             question_generator=condense_question_chain,
             **kwargs,
         )
+
+    def count_tokens(self, docs):
+        total_num_tokens = 0
+        for doc in docs:
+            total_num_tokens = total_num_tokens + len(enc.encode(doc.page_content))
+        return total_num_tokens
+
 
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         question = inputs["question"]
@@ -95,7 +116,17 @@ class ChatVectorDBChain(Chain, BaseModel):
         new_inputs = inputs.copy()
         new_inputs["question"] = new_question
         new_inputs["chat_history"] = chat_history_str
-        answer, _ = self.combine_docs_chain.combine_docs(docs, **new_inputs)
+
+        total_num_tokens = self.count_tokens(docs)
+        if total_num_tokens < MAX_ALLOWED_TOKEN:
+            print(f"Processing answer with {len(docs)} docs and {total_num_tokens} tokens, using stuff chain")
+            # If the total number of tokens can be handled by one request, use stuff chain 
+            answer, _ = self.combine_docs_chains[0].combine_docs(docs, **new_inputs)
+        else:
+            print(f"Processing answer with {len(docs)} docs and {total_num_tokens} tokens, using map_reduce chain")
+            # Otherwise, use map-reduce chain
+            answer, _ = self.combine_docs_chains[1].combine_docs(docs, **new_inputs)
+
         if self.return_source_documents:
             return {self.output_key: answer, "source_documents": docs}
         else:
@@ -118,7 +149,7 @@ class ChatVectorDBChain(Chain, BaseModel):
         new_inputs = inputs.copy()
         new_inputs["question"] = new_question
         new_inputs["chat_history"] = chat_history_str
-        answer, _ = await self.combine_docs_chain.acombine_docs(docs, **new_inputs)
+        answer, _ = await self.combine_docs_chains[0].acombine_docs(docs, **new_inputs)
         if self.return_source_documents:
             return {self.output_key: answer, "source_documents": docs}
         else:
