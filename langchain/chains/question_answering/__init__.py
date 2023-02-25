@@ -123,6 +123,7 @@ def _load_map_reduce_chain(
             verbose=verbose,
             callback_manager=callback_manager,
         )
+    print("XXXX creating MapReduceDocumentsChain with Quinn's implementation")
     return MapReduceDocumentsChain(
         llm_chain=map_chain,
         combine_document_chain=combine_document_chain,
@@ -159,6 +160,7 @@ def _load_refine_chain(
         verbose=verbose,
         callback_manager=callback_manager,
     )
+    print("XXXX creating RefineDocumentsChain with Quinn's implementation")
     return RefineDocumentsChain(
         initial_llm_chain=initial_chain,
         refine_llm_chain=refine_chain,
