@@ -61,6 +61,7 @@ def _load_stuff_chain(
         llm=llm, prompt=prompt, verbose=verbose, callback_manager=callback_manager
     )
     # TODO: document prompt
+    print("XXXX creating StuffDocumentsChain with Quinn's implementation")
     return StuffDocumentsChain(
         llm_chain=llm_chain,
         document_variable_name=document_variable_name,
