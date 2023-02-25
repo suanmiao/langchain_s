@@ -130,6 +130,7 @@ def _load_map_reduce_chain(
         collapse_document_chain=collapse_chain,
         verbose=verbose,
         callback_manager=callback_manager,
+        # This will cause the initialization to fail with extra parameters
         # **kwargs,
     )
 
@@ -165,6 +166,7 @@ def _load_refine_chain(
         initial_response_name=initial_response_name,
         verbose=verbose,
         callback_manager=callback_manager,
+        # This will cause the initialization to fail with extra parameters
         # **kwargs,
     )
 
