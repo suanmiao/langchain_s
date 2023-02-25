@@ -130,7 +130,7 @@ def _load_map_reduce_chain(
         collapse_document_chain=collapse_chain,
         verbose=verbose,
         callback_manager=callback_manager,
-        **kwargs,
+        # **kwargs,
     )
 
 
@@ -165,7 +165,7 @@ def _load_refine_chain(
         initial_response_name=initial_response_name,
         verbose=verbose,
         callback_manager=callback_manager,
-        **kwargs,
+        # **kwargs,
     )
 
 
