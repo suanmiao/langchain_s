@@ -36,7 +36,7 @@ class ChatVectorDBChain(Chain, BaseModel):
     output_key: str = "answer"
     return_source_documents: bool = False
     top_k_docs_for_context: int = 4
-    combine_docs_chains: list[BaseCombineDocumentsChain] = []
+    combine_docs_chains: List[BaseCombineDocumentsChain] = []
     """Return the source documents."""
 
     @property
