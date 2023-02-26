@@ -13,10 +13,13 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.llms.base import BaseLLM
 from langchain.prompts.base import BasePromptTemplate
 from langchain.vectorstores.base import VectorStore
+from langchain.text_splitter import TokenTextSplitter
 import tiktoken
 enc = tiktoken.get_encoding("gpt2")
-MAX_ALLOWED_TOKEN = 3500
+# This has to be smaller than: 4097 (total) - 500 (for completion) - 500 (for prompt)
+MAX_ALLOWED_TOKEN = 2900
 
+text_splitter = TokenTextSplitter(chunk_size=MAX_ALLOWED_TOKEN, chunk_overlap=0)
 
 def _get_chat_history(chat_history: List[Tuple[str, str]]) -> str:
     buffer = ""
@@ -101,6 +104,11 @@ class ChatVectorDBChain(Chain, BaseModel):
             total_num_tokens = total_num_tokens + len(enc.encode(doc.page_content))
         return total_num_tokens
 
+    def trim_doc_page_content(self, doc):
+        num_tokens = len(enc.encode(doc.page_content))
+        if num_tokens > MAX_ALLOWED_TOKEN:
+            print(f"Fatal error, the doc's page_content has num_tokens {num_tokens}, which exceeds the limit {MAX_ALLOWED_TOKEN}, trimming off the size.")
+            doc.page_content = text_splitter.split_text(doc.page_content)[0] 
 
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         question = inputs["question"]
@@ -127,6 +135,10 @@ class ChatVectorDBChain(Chain, BaseModel):
         else:
             print(f"Processing answer with {len(docs)} docs and {total_num_tokens} tokens, using map_reduce chain")
             # Otherwise, use map-reduce chain
+            # Trim the page content to be safe
+            for doc in docs:
+                self.trim_doc_page_content(doc)
+
             answer, _ = self.combine_docs_chains[1].combine_docs(docs, **new_inputs)
 
         if self.return_source_documents:
