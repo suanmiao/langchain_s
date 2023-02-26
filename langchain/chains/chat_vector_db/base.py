@@ -31,11 +31,12 @@ class ChatVectorDBChain(Chain, BaseModel):
     """Chain for chatting with a vector database."""
 
     vectorstore: VectorStore
-    combine_docs_chains: list[BaseCombineDocumentsChain]
+    combine_docs_chain: BaseCombineDocumentsChain
     question_generator: LLMChain
     output_key: str = "answer"
     return_source_documents: bool = False
     top_k_docs_for_context: int = 4
+    combine_docs_chains: list[BaseCombineDocumentsChain] = []
     """Return the source documents."""
 
     @property
@@ -88,6 +89,7 @@ class ChatVectorDBChain(Chain, BaseModel):
         condense_question_chain = LLMChain(llm=llm, prompt=condense_question_prompt)
         return cls(
             vectorstore=vectorstore,
+            combine_docs_chain=stuff_chain,
             combine_docs_chains=[stuff_chain, map_reduce_chain, refine_chain],
             question_generator=condense_question_chain,
             **kwargs,
