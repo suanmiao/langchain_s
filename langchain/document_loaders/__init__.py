@@ -3,6 +3,7 @@
 from langchain.document_loaders.airbyte_json import AirbyteJSONLoader
 from langchain.document_loaders.azlyrics import AZLyricsLoader
 from langchain.document_loaders.college_confidential import CollegeConfidentialLoader
+from langchain.document_loaders.conllu import CoNLLULoader
 from langchain.document_loaders.directory import DirectoryLoader
 from langchain.document_loaders.docx import UnstructuredDocxLoader
 from langchain.document_loaders.email import UnstructuredEmailLoader
@@ -15,6 +16,8 @@ from langchain.document_loaders.googledrive import GoogleDriveLoader
 from langchain.document_loaders.gutenberg import GutenbergLoader
 from langchain.document_loaders.hn import HNLoader
 from langchain.document_loaders.html import UnstructuredHTMLLoader
+from langchain.document_loaders.ifixit import IFixitLoader
+from langchain.document_loaders.image import UnstructuredImageLoader
 from langchain.document_loaders.imsdb import IMSDbLoader
 from langchain.document_loaders.notebook import NotebookLoader
 from langchain.document_loaders.notion import NotionDirectoryLoader
@@ -51,6 +54,7 @@ __all__ = [
     "UnstructuredPowerPointLoader",
     "UnstructuredWordDocumentLoader",
     "UnstructuredPDFLoader",
+    "UnstructuredImageLoader",
     "ObsidianLoader",
     "UnstructuredDocxLoader",
     "UnstructuredEmailLoader",
@@ -67,6 +71,7 @@ __all__ = [
     "IMSDbLoader",
     "AZLyricsLoader",
     "CollegeConfidentialLoader",
+    "IFixitLoader",
     "GutenbergLoader",
     "PagedPDFSplitter",
     "EverNoteLoader",
@@ -77,4 +82,5 @@ __all__ = [
     "SRTLoader",
     "FacebookChatLoader",
     "NotebookLoader",
+    "CoNLLULoader",
 ]
